@@ -1,0 +1,757 @@
+```html
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Bab 3omara | Smart Control</title>
+
+  <style>
+    :root {
+      --bg: #080b12;
+      --panel: #111824;
+      --cyan: #55e6ff;
+      --blue: #477bff;
+      --text: #f3f7ff;
+      --muted: #7e8ca5;
+      --green: #5cffbd;
+    }
+
+    * {
+      box-sizing: border-box;
+    }
+
+    body {
+      margin: 0;
+      min-height: 100vh;
+      font-family: Arial, sans-serif;
+      color: var(--text);
+      background:
+        radial-gradient(ellipse at 50% 30%,
+          #17263c 0%, #0b111d 42%, var(--bg) 78%);
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      padding: 24px;
+      overflow-x: hidden;
+    }
+
+    body::before {
+      content: "";
+      position: fixed;
+      inset: 0;
+      pointer-events: none;
+      opacity: .16;
+      background-image:
+        linear-gradient(rgba(100,180,255,.08) 1px, transparent 1px),
+        linear-gradient(90deg, rgba(100,180,255,.08) 1px, transparent 1px);
+      background-size: 40px 40px;
+      mask-image: linear-gradient(to bottom, black, transparent 85%);
+    }
+
+    .brand {
+      text-align: center;
+      margin-bottom: 30px;
+      position: relative;
+    }
+
+    .brand-icon {
+      width: 48px;
+      height: 48px;
+      margin: 0 auto 15px;
+      display: grid;
+      place-items: center;
+      border: 1px solid rgba(85,230,255,.4);
+      border-radius: 16px;
+      color: var(--cyan);
+      background: rgba(85,230,255,.07);
+      box-shadow: 0 0 30px rgba(85,230,255,.08);
+      font-size: 24px;
+    }
+
+    .brand h1 {
+      font-size: 13px;
+      letter-spacing: 5px;
+      text-transform: uppercase;
+      margin: 0;
+      font-weight: 700;
+    }
+
+    .brand p {
+      color: var(--muted);
+      font-size: 11px;
+      letter-spacing: 3px;
+      margin-top: 10px;
+    }
+
+    .panel {
+      width: 100%;
+      max-width: 410px;
+      position: relative;
+      background: linear-gradient(
+        145deg,
+        rgba(22,33,49,.96),
+        rgba(12,18,29,.98)
+      );
+      border: 1px solid rgba(145,180,230,.15);
+      border-radius: 28px;
+      padding: 30px 26px;
+      box-shadow:
+        0 30px 90px rgba(0,0,0,.4),
+        inset 0 1px rgba(255,255,255,.04);
+    }
+
+    #dashboard {
+      display: none;
+    }
+
+    .eyebrow {
+      font-size: 10px;
+      letter-spacing: 3px;
+      text-transform: uppercase;
+      color: var(--cyan);
+      margin-bottom: 12px;
+    }
+
+    .panel h2 {
+      font-size: 27px;
+      letter-spacing: -.7px;
+      margin: 0 0 9px;
+    }
+
+    .subtitle {
+      font-size: 13px;
+      line-height: 1.7;
+      color: var(--muted);
+      margin: 0 0 25px;
+    }
+
+    .field {
+      margin-bottom: 16px;
+    }
+
+    .field label {
+      display: block;
+      font-size: 11px;
+      color: #a8b6cb;
+      margin-bottom: 8px;
+    }
+
+    .field input {
+      width: 100%;
+      padding: 14px;
+      border: 1px solid #273448;
+      border-radius: 12px;
+      background: #0a101b;
+      color: white;
+      outline: none;
+      font-size: 14px;
+    }
+
+    .field input:focus {
+      border-color: var(--cyan);
+      box-shadow: 0 0 0 3px rgba(85,230,255,.08);
+    }
+
+    .primary-btn {
+      width: 100%;
+      padding: 15px;
+      margin-top: 8px;
+      border: 0;
+      border-radius: 12px;
+      color: #07111d;
+      font-size: 13px;
+      font-weight: 800;
+      letter-spacing: 1.5px;
+      background: linear-gradient(100deg, var(--cyan), #8bb8ff);
+      cursor: pointer;
+      transition: .2s;
+    }
+
+    .primary-btn:hover {
+      filter: brightness(1.1);
+      transform: translateY(-1px);
+    }
+
+    .primary-btn:disabled {
+      opacity: .5;
+      cursor: wait;
+      transform: none;
+    }
+
+    .topline {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 28px;
+      gap: 10px;
+    }
+
+    .device-tag {
+      color: var(--cyan);
+      font-size: 10px;
+      letter-spacing: 2px;
+      text-transform: uppercase;
+    }
+
+    .connection {
+      display: flex;
+      align-items: center;
+      gap: 7px;
+      font-size: 10px;
+      color: var(--muted);
+    }
+
+    .dot {
+      width: 7px;
+      height: 7px;
+      border-radius: 50%;
+      background: #64748b;
+    }
+
+    .dot.online {
+      background: var(--green);
+      box-shadow: 0 0 12px rgba(92,255,189,.65);
+    }
+
+    .device-title {
+      text-align: center;
+      margin-bottom: 24px;
+    }
+
+    .device-title h2 {
+      font-size: 29px;
+      margin-bottom: 8px;
+    }
+
+    .device-title p {
+      margin: 0;
+      color: var(--muted);
+      font-size: 12px;
+    }
+
+    .status-pill {
+      width: fit-content;
+      margin: 0 auto;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      padding: 9px 15px;
+      border: 1px solid #29364a;
+      border-radius: 30px;
+      background: rgba(4,9,17,.5);
+      color: #9aa8bd;
+      font-size: 10px;
+      letter-spacing: 2px;
+    }
+
+    .status-pill.active {
+      color: var(--green);
+      border-color: rgba(92,255,189,.3);
+    }
+
+    .status-pill.active .dot {
+      background: var(--green);
+      box-shadow: 0 0 12px var(--green);
+    }
+
+    .orb-area {
+      height: 235px;
+      display: grid;
+      place-items: center;
+      position: relative;
+      margin: 10px 0 20px;
+    }
+
+    .orbit {
+      position: absolute;
+      width: 208px;
+      height: 208px;
+      border-radius: 50%;
+      border: 1px solid rgba(85,230,255,.10);
+    }
+
+    .orbit::before {
+      content: "";
+      position: absolute;
+      inset: 13px;
+      border: 1px dashed rgba(85,230,255,.15);
+      border-radius: 50%;
+    }
+
+    .orbit::after {
+      content: "";
+      position: absolute;
+      width: 6px;
+      height: 6px;
+      top: 27px;
+      right: 23px;
+      border-radius: 50%;
+      background: var(--cyan);
+      box-shadow: 0 0 12px var(--cyan);
+    }
+
+    .power-btn {
+      position: relative;
+      width: 142px;
+      height: 142px;
+      border-radius: 50%;
+      border: 1px solid rgba(85,230,255,.5);
+      background:
+        radial-gradient(circle at 35% 25%,
+          #263d5b 0%, #132238 48%, #0b1423 100%);
+      color: var(--cyan);
+      cursor: pointer;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      gap: 10px;
+      box-shadow:
+        0 0 0 9px rgba(85,230,255,.025),
+        0 0 35px rgba(47,158,255,.13),
+        inset 0 0 25px rgba(85,230,255,.05);
+      transition: transform .2s, box-shadow .3s;
+      -webkit-tap-highlight-color: transparent;
+    }
+
+    .power-btn:hover {
+      transform: scale(1.035);
+      box-shadow:
+        0 0 0 10px rgba(85,230,255,.04),
+        0 0 45px rgba(47,158,255,.22);
+    }
+
+    .power-btn:active {
+      transform: scale(.96);
+    }
+
+    .power-btn:disabled {
+      cursor: wait;
+      opacity: .65;
+    }
+
+    .power-btn svg {
+      width: 42px;
+      height: 42px;
+      stroke: currentColor;
+      stroke-width: 1.7;
+      fill: none;
+      stroke-linecap: round;
+      stroke-linejoin: round;
+    }
+
+    .power-btn span {
+      font-size: 10px;
+      letter-spacing: 3px;
+      font-weight: bold;
+    }
+
+    .power-btn.pulsing {
+      color: var(--green);
+      border-color: var(--green);
+      box-shadow:
+        0 0 0 10px rgba(92,255,189,.05),
+        0 0 50px rgba(92,255,189,.25),
+        inset 0 0 35px rgba(92,255,189,.10);
+      animation: glow .8s ease-in-out infinite alternate;
+    }
+
+    @keyframes glow {
+      from { transform: scale(1); }
+      to { transform: scale(1.035); }
+    }
+
+    .instruction {
+      text-align: center;
+      color: #9aa8bd;
+      font-size: 12px;
+      line-height: 1.8;
+      margin: 0 auto 24px;
+      max-width: 250px;
+    }
+
+    .divider {
+      height: 1px;
+      background: linear-gradient(
+        90deg, transparent, #29364a, transparent
+      );
+      margin: 22px 0;
+    }
+
+    .info-row {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      gap: 12px;
+      font-size: 11px;
+      margin: 14px 0;
+    }
+
+    .info-row span:first-child {
+      color: var(--muted);
+    }
+
+    .info-row span:last-child {
+      color: #dce6f5;
+    }
+
+    .logout-btn {
+      width: 100%;
+      margin-top: 18px;
+      padding: 12px;
+      border: 1px solid #29364a;
+      border-radius: 11px;
+      background: transparent;
+      color: #9aa8bd;
+      font-size: 11px;
+      letter-spacing: 1px;
+      cursor: pointer;
+      transition: .2s;
+    }
+
+    .logout-btn:hover {
+      color: white;
+      border-color: #64748b;
+    }
+
+    #message {
+      text-align: center;
+      font-size: 12px;
+      line-height: 1.6;
+      color: #ffb8b8;
+      margin-top: 15px;
+      overflow-wrap: anywhere;
+    }
+
+    footer {
+      margin-top: 25px;
+      color: #59677d;
+      font-size: 10px;
+      letter-spacing: 2px;
+      text-align: center;
+    }
+
+    @media (max-width: 420px) {
+      body { padding: 18px; }
+      .panel { padding: 25px 20px; }
+      .orb-area { height: 215px; }
+      .orbit { width: 190px; height: 190px; }
+      .power-btn { width: 132px; height: 132px; }
+    }
+  </style>
+</head>
+
+<body>
+
+  <div class="brand">
+    <div class="brand-icon">⌁</div>
+    <h1>Bab 3omara</h1>
+    <p>SMART CONTROL SYSTEM</p>
+  </div>
+
+  <!-- LOGIN -->
+  <section class="panel" id="loginForm">
+    <div class="eyebrow">Secure access</div>
+    <h2>Welcome back.</h2>
+    <p class="subtitle">
+      Sign in to access your smart relay control system.
+    </p>
+
+    <form id="loginFields">
+      <div class="field">
+        <label for="email">EMAIL ADDRESS</label>
+        <input
+          type="email"
+          id="email"
+          placeholder="Enter your email"
+          autocomplete="username"
+          required
+        >
+      </div>
+
+      <div class="field">
+        <label for="password">PASSWORD</label>
+        <input
+          type="password"
+          id="password"
+          placeholder="Enter your password"
+          autocomplete="current-password"
+          required
+        >
+      </div>
+
+      <button class="primary-btn" id="loginBtn" type="submit">
+        SIGN IN
+      </button>
+
+      <div id="loginMessage" role="status"></div>
+    </form>
+  </section>
+
+  <!-- SINGLE RELAY DASHBOARD -->
+  <main class="panel" id="dashboard">
+    <div class="topline">
+      <span class="device-tag">DEVICE / 01</span>
+      <span class="connection">
+        <span class="dot" id="connectionDot"></span>
+        <span id="connectionText">CONNECTING</span>
+      </span>
+    </div>
+
+    <div class="device-title">
+      <div class="eyebrow">Control interface</div>
+      <h2>Relay One</h2>
+      <p>Single-channel smart actuator</p>
+    </div>
+
+    <div class="status-pill" id="statusPill">
+      <span class="dot"></span>
+      <span id="statusText">WAITING FOR DEVICE</span>
+    </div>
+
+    <div class="orb-area">
+      <div class="orbit"></div>
+
+      <button
+        class="power-btn"
+        id="activateBtn"
+        type="button"
+        aria-label="Activate relay for one second"
+        disabled
+      >
+        <svg viewBox="0 0 48 48" aria-hidden="true">
+          <path d="M24 5v19"></path>
+          <path d="M13 12.5a19 19 0 1 0 22 0"></path>
+        </svg>
+        <span id="buttonLabel">ACTIVATE</span>
+      </button>
+    </div>
+
+    <p class="instruction" id="instruction">
+      Tap the power button to send a one-second activation pulse.
+    </p>
+
+    <div class="divider"></div>
+
+    <div class="info-row">
+      <span>CHANNEL</span>
+      <span>GPIO 23</span>
+    </div>
+
+    <div class="info-row">
+      <span>ACTIVATION TIME</span>
+      <span>1 SECOND</span>
+    </div>
+
+    <div class="info-row">
+      <span>COMMAND STATUS</span>
+      <span id="commandStatus">STANDBY</span>
+    </div>
+
+    <button class="logout-btn" id="logoutBtn" type="button">
+      SIGN OUT ↗
+    </button>
+
+    <div id="message" role="status"></div>
+  </main>
+
+  <footer>
+    BAB 3OMARA · SMART LIVING
+  </footer>
+
+  <!-- Firebase SDK -->
+  <script src="https://www.gstatic.com/firebasejs/9.6.10/firebase-app-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/9.6.10/firebase-database-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/9.6.10/firebase-auth-compat.js"></script>
+
+  <script>
+    // Firebase project configuration
+   const firebaseConfig = {
+  apiKey: "AIzaSyCzkQADV8vzdvCTO0uopOvAnquJ_-2HVWU",
+  authDomain: "bab-3omara.firebaseapp.com",
+  databaseURL: "https://bab-3omara-default-rtdb.europe-west1.firebasedatabase.app",
+  projectId: "bab-3omara",
+  storageBucket: "bab-3omara.firebasestorage.app",
+  messagingSenderId: "565274007318",
+  appId: "1:565274007318:web:f313a3099ffb6c9a2d6237",
+  measurementId: "G-CBPK7ZZXW7"
+};
+
+    firebase.initializeApp(firebaseConfig);
+
+    const auth = firebase.auth();
+    const db = firebase.database();
+    const relayRef = db.ref("/relay1");
+
+    const loginForm = document.getElementById("loginForm");
+    const loginFields = document.getElementById("loginFields");
+    const loginBtn = document.getElementById("loginBtn");
+    const loginMessage = document.getElementById("loginMessage");
+
+    const dashboard = document.getElementById("dashboard");
+    const activateBtn = document.getElementById("activateBtn");
+    const buttonLabel = document.getElementById("buttonLabel");
+    const statusPill = document.getElementById("statusPill");
+    const statusText = document.getElementById("statusText");
+    const commandStatus = document.getElementById("commandStatus");
+    const instruction = document.getElementById("instruction");
+    const message = document.getElementById("message");
+
+    const connectionDot = document.getElementById("connectionDot");
+    const connectionText = document.getElementById("connectionText");
+
+    let relayListener = null;
+    let connectedListener = null;
+    let relayIsActive = false;
+    let sendingCommand = false;
+
+    // Sign in with Firebase Authentication
+    loginFields.addEventListener("submit", async (event) => {
+      event.preventDefault();
+
+      const email = document.getElementById("email").value.trim();
+      const password = document.getElementById("password").value;
+
+      loginBtn.disabled = true;
+      loginBtn.textContent = "SIGNING IN...";
+      loginMessage.textContent = "";
+
+      try {
+        await auth.signInWithEmailAndPassword(email, password);
+      } catch (error) {
+        loginMessage.textContent = "Sign-in failed: " + error.message;
+      } finally {
+        loginBtn.disabled = false;
+        loginBtn.textContent = "SIGN IN";
+      }
+    });
+
+    // Firebase Authentication state
+    auth.onAuthStateChanged((user) => {
+      if (user) {
+        loginForm.style.display = "none";
+        dashboard.style.display = "block";
+        startRelayControl();
+      } else {
+        stopRelayControl();
+        dashboard.style.display = "none";
+        loginForm.style.display = "block";
+      }
+    });
+
+    function startRelayControl() {
+      stopRelayControl();
+
+      // Monitor Firebase connection
+      connectedListener = (snapshot) => {
+        const online = snapshot.val() === true;
+
+        connectionDot.classList.toggle("online", online);
+        connectionText.textContent = online ? "CONNECTED" : "OFFLINE";
+
+        if (!online) {
+          activateBtn.disabled = true;
+        } else {
+          activateBtn.disabled = sendingCommand || relayIsActive;
+        }
+      };
+
+      db.ref(".info/connected").on("value", connectedListener);
+
+      // Listen to the single relay command/state
+      relayListener = (snapshot) => {
+        const state = snapshot.val() === true;
+        relayIsActive = state;
+
+        statusPill.classList.toggle("active", state);
+        statusText.textContent = state ? "PULSE ACTIVE" : "READY";
+
+        activateBtn.classList.toggle("pulsing", state);
+        buttonLabel.textContent = state ? "ACTIVE" : "ACTIVATE";
+
+        commandStatus.textContent = state ? "IN PROGRESS" : "STANDBY";
+
+        if (state) {
+          instruction.textContent = "Activation sent. Waiting for automatic reset...";
+        } else {
+          instruction.textContent = "Ready. Tap the power button to activate the relay for one second.";
+          if (!sendingCommand) {
+            message.textContent = "";
+          }
+        }
+
+        activateBtn.disabled =
+          sendingCommand || state || connectionText.textContent !== "CONNECTED";
+      };
+
+      relayRef.on("value", relayListener, (error) => {
+        message.textContent = "Database read failed: " + error.message;
+      });
+    }
+
+    // Send one activation command.
+    // The ESP32 is responsible for resetting relay1 to false.
+    activateBtn.addEventListener("click", async () => {
+      if (sendingCommand || relayIsActive) return;
+
+      if (!auth.currentUser) {
+        message.textContent = "Please sign in again.";
+        return;
+      }
+
+      sendingCommand = true;
+      activateBtn.disabled = true;
+      commandStatus.textContent = "SENDING...";
+      message.textContent = "";
+
+      try {
+        await relayRef.set(true);
+        commandStatus.textContent = "COMMAND SENT";
+      } catch (error) {
+        message.textContent = "Command failed: " + error.message;
+        commandStatus.textContent = "FAILED";
+      } finally {
+        sendingCommand = false;
+
+        activateBtn.disabled =
+          relayIsActive || connectionText.textContent !== "CONNECTED";
+      }
+    });
+
+    function stopRelayControl() {
+      if (relayListener) {
+        relayRef.off("value", relayListener);
+        relayListener = null;
+      }
+
+      if (connectedListener) {
+        db.ref(".info/connected").off("value", connectedListener);
+        connectedListener = null;
+      }
+
+      relayIsActive = false;
+      sendingCommand = false;
+      activateBtn.disabled = true;
+      activateBtn.classList.remove("pulsing");
+      buttonLabel.textContent = "ACTIVATE";
+      statusText.textContent = "WAITING FOR DEVICE";
+      commandStatus.textContent = "STANDBY";
+      statusPill.classList.remove("active");
+      message.textContent = "";
+    }
+
+    // Sign out
+    document.getElementById("logoutBtn").addEventListener("click", async () => {
+      try {
+        await auth.signOut();
+      } catch (error) {
+        message.textContent = "Sign-out failed: " + error.message;
+      }
+    });
+  </script>
+
+</body>
+</html>
+```
